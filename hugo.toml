@@ -1,4 +1,9 @@
-baseURL = 'https://example.org/'
+baseURL = 'https://no-sec.net'
 languageCode = 'en-us'
-title = 'My New Hugo Site'
-theme = "archie"
+title = 'no-sec blog'
+theme = 'archie'
+copyright = "© no-sec.net"
+
+[params]
+	mode="toggle"
+	subtitle = "Enter subtitle here"
