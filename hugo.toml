@@ -1,4 +1,4 @@
-baseURL = 'https://no-sec.github.io/blog/'
+baseURL = 'https://no-sec.github.io/'
 languageCode = 'en-us'
 title = 'no-sec blog'
 theme = 'archie'
