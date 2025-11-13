@@ -4,6 +4,7 @@ description: This is my very 2nd post
 date: 2025-11-12
 tldr: TLDR
 draft: false
+tags: [cve, app]
 toc: true
 ---
 

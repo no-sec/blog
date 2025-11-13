@@ -4,7 +4,7 @@ description: This is my very 1st post
 date: 2025-11-11
 tldr: TLDR
 draft: false
-tags: mobile, sec
+tags: [mobile]
 toc: true
 ---
 
