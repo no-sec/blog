@@ -1,4 +1,4 @@
-baseURL = 'https://no-sec.github.io/'
+baseURL = 'https://no-sec.net/'
 languageCode = 'en-us'
 title = 'no-sec blog'
 theme = 'archie'
@@ -6,4 +6,4 @@ copyright = "© no-sec.net"
 
 [params]
 	mode="toggle"
-	subtitle = "Enter subtitle here"
+	subtitle = "Welcome to no-sec blog, where a team of passionate pentesters shares their insights and expertise from the world of cybersecurity. From CVE write-ups to practical guides on exploitation techniques and defense strategies, we aim to contribute valuable knowledge to the security community."
