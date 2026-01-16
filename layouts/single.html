@@ -8,6 +8,7 @@
           <h1 class="title">{{ .Title }}</h1>
           <div class="meta">Posted on {{ dateFormat ":date_medium" .Date }} 
             {{ if .Params.authors }}by {{ delimit .Params.authors ", " }}{{ end }}
+            {{ if .Params.co_authors }}<br/>Co-Authors:  {{ delimit .Params.co_authors ", " }}{{ end }}
             {{ if .Draft }}<span class="draft-label">DRAFT</span> {{ end }}</div>
         </div>
         {{ if isset .Params "tldr" }}

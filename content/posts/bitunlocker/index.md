@@ -5,7 +5,12 @@ description: A hardware based attack leveraging a weakness in the default config
 draft: false
 tags: [hardware, bitlocker, encryption]
 toc: false
-authors: [Bruno Hoffmann, Hannes Schaller]
+authors:
+  - Bruno Hoffmann
+  - Hannes Schaller
+co_authors:
+  - Stefan Venz
+  - Lukas Poeppel
 ---
 
 ## Abstract
