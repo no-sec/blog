@@ -1,21 +1,19 @@
-<footer>
-  <div style="display:flex">
-    {{- range $index, $key := .Site.Params.Social -}}
-    {{- if hasPrefix $key.icon "simple:" -}}
-    <a class="soc" href="{{ $key.url }}" rel="me" title="{{ $key.name }}"><i class="si si-{{ substr $key.icon 7 }}"></i></a>
-    {{- else -}}
-    <a class="soc" href="{{ $key.url }}" rel="me" title="{{ $key.name }}">{{ template "feathericon" (dict "Icon" $key.icon "UseCDN" .Site.Params.useCDN) }}</a>
-    {{- end -}}
-    <a class="border"></a>
-    {{- end -}}
-  </div>
-  <div class="footer-info">
-    {{ dateFormat "2006" now }} {{ with .Site.Copyright }} {{ . }} | {{ end }} <a
-      href="https://github.com/athul/archie">Archie Theme</a> | Built with <a href="https://gohugo.io">Hugo</a>
-    | Subscribe to <a href="{{ .Site.BaseURL }}index.xml" target="_blank" rel="noopener noreferrer" aria-label="RSS Feed">RSS Feed</a>
-  </div>
-</footer>
-{{ if not hugo.IsServer }}
-{{ template "_internal/google_analytics.html" . }}
-{{ end }}
+<footer id="final-footer-container">
+    <div style="background-color: #e20074 !important; padding: 25px 0 !important; margin-bottom: 25px !important; display: block !important; border: none !important;">
+        <div style="max-width: 900px; margin: 0 auto; padding: 0 20px; display: flex; align-items: center; justify-content: center;">
+            <a href="https://www.telekom.com/" style="display: block !important; border: none !important; background: transparent !important;">
+                <svg viewBox="0 0 840 1000" style="height: 50px; fill: #ffffff; display: block;">
+                    <path d="M200,660H0V460h200V660z M0,0v340h60v-10c0-160,90-260,260-260h10v720c0,100-40,140-140,140h-30v70h520v-70h-30c-100,0-140-40-140-140V70h10c170,0,260,100,260,260v10h60V0H0z M640,660h200V460H640V660z"/>
+                </svg>
+            </a>
+        </div>
+    </div>
 
+    <div class="footer-row">
+        <span>2026 © no-sec.net</span>
+        <span>|</span>
+        <span><a href="https://github.com/athul/archie">Archie Theme</a> | Built with <a href="https://gohugo.io">Hugo</a></span>
+        <span>|</span>
+        <span><a href="{{ .Site.BaseURL }}index.xml">Subscribe to RSS</a></span>
+    </div>
+</footer>
