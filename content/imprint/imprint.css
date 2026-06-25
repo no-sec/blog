@@ -1,0 +1,49 @@
+:root{
+
+}
+
+
+h1::before { color: var(--color-primary, #dc143c); content: ''; }
+h2::before { color: var(--color-primary, #dc143c); content: ''; }
+h3::before { color: var(--color-primary, #dc143c); content: ''; }
+h4::before { color: var(--color-primary, #dc143c); content: ''; }
+h5::before { color: var(--color-primary, #dc143c); content: ''; }
+h6::before { color: var(--color-primary, #dc143c); content: ''; }
+
+
+
+/* Tables */
+
+/* Tables */
+table {
+  border-spacing: 0;
+  border-collapse: collapse;
+  /* Fallback for older browsers */
+  width: 100%;
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+  /* Modern logical properties */
+  inline-size: 100%;
+  margin-block: 1rem;
+  border-radius: var(--border-radius, 5px);
+  overflow: hidden;
+  box-shadow: 0 0px 0px rgba(0, 0, 0, 0);
+}
+
+table th {
+  padding: 0.75rem;
+  border: 1px solid transparent;
+  font-weight: bold;
+  text-align: start;
+  background-color: transparent;
+}
+
+table td {
+  padding: 0.75rem;
+  border: 1px solid transparent;
+}
+
+
+table tr:nth-child(even) {
+  background-color: transparent;
+}
